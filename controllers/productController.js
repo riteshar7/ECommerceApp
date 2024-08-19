@@ -1,44 +1,72 @@
 const Product = require('../models/productModel');
+const shortid = require('shortid');
 const slugify = require('slugify');
+const Category = require('../models/categoryModel');
 
-exports.addProducts = (req, res) => {
-    // res.json({
-    //     file: req.files,
-    //     body: req.body
-    // });
+exports.createProduct = (req, res) => {
 
-    const { name, price, quantity, description, category } = req.body;
-    const productImages = [];
-    // console.log(req.files);
-    if(req.files.length){
-        for(let file of req.files){
-            const img = { img: file.filename }; 
-            productImages.push(img);
-        }
-        console.log(productImages);
+    //res.status(200).json( { file: req.files, body: req.body } );
+
+    const {
+        name, price, description, category, quantity, createdBy
+    } = req.body;
+    let productPictures = [];
+
+    if(req.files.length > 0){
+        productPictures = req.files.map(file => {
+            return { img: file.filename }
+        });
     }
 
-    const _product = new Product({
+    const product = new Product({
         name: name,
         slug: slugify(name),
-        price: price,
-        quantity: quantity,
-        description: description,
-        productImages: productImages,
-        category: category,
-        createdBy: req.user._id,
+        price,
+        quantity,
+        description,
+        productPictures,
+        category,
+        createdBy: req.user._id
     });
 
-    _product.save()
+    product.save()
     .then((product) => {
-        res.json({product});
+        if(product){
+            res.status(201).json({ product });
+        }
     })
-    .catch((err) => {
-        console.log('Product not Saved');
+    .catch((err)=>{
         console.log(err);
-    })
-}
+    });
+};
 
-exports.getProducts = (req, res) => {
-    res.json({message: 'Hello'});
-}
+exports.getProductsBySlug = (req, res) => {
+    const { slug } = req.params;
+    Category.findOne({ slug: slug })
+    .select('_id')
+    .then((category) => {
+        if(category){
+            Product.find({ category: category._id })
+            .then((products) => {
+                if(products.length > 0){
+                    res.status(200).json({
+                        products,
+                        productsByPrice: {
+                            under5k: products.filter(product => product.price <= 5000),
+                            under10k: products.filter(product => product.price > 5000 && product.price <= 10000),
+                            under15k: products.filter(product => product.price > 10000 && product.price <= 15000),
+                            under20k: products.filter(product => product.price > 15000 && product.price <= 20000),
+                            under30k: products.filter(product => product.price > 20000 && product.price <= 30000),
+                        }
+                    });
+                }  
+            })
+            .catch((err)=>{
+                console.log(err);
+            });
+        }        
+    })
+    .catch((err)=>{
+        console.log(err);
+    });
+};

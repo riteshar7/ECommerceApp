@@ -1,9 +1,9 @@
 const express = require('express');
-const { addItemsToCart } = require('../controllers/cartController');
-const { requireSignin, userVerification } = require('../common-middlewares/index');
+const { addItemToCart } = require('../controllers/cartController');
+const { requireSignin, userMiddleware } = require('../common-middlewares');
 const router = express.Router();
 
-router.post('/add', requireSignin, addItemsToCart);
-// router.get('/', getCategory);
+
+router.post('/user/cart/addtocart', requireSignin, userMiddleware, addItemToCart);
 
 module.exports = router;

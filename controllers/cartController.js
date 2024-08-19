@@ -1,68 +1,59 @@
 const Cart = require('../models/cartModel');
-const User = require('../models/userModel');
 
-exports.addItemsToCart = (req, res) => {
-    // user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    // cartItems: [
-    //     {
-    //         product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
-    //         quantity: { type: Number, default: 1 },
-    //         price: { type: Number, required: true }
-    //     }
-    // ]
-    Cart.findOne({user: req.user._id})
+exports.addItemToCart = (req, res) => {
+
+    Cart.findOne({ user: req.user._id })
     .then((cart) => {
         if(cart){
-            //if cart of that particular user already exists
-
-            const sameItem = cart.cartItems.find(cItems => cItems.product == req.body.cartItems.product)
-            if(sameItem){
-                //if the item is same of that same user, just update the quantity
-                Cart.findOneAndUpdate({"user": req.user._id, "cartItems.product": req.body.cartItems.product},{
-                    "$set":{
+            //if cart already exists then update cart by quantity
+            const product = req.body.cartItems.product;
+            const item = cart.cartItems.find(c => c.product == product);
+            let condition, update;
+            if(item){
+                condition = { "user": req.user._id, "cartItems.product": product };
+                update = {
+                    "$set": {
                         "cartItems.$": {
                             ...req.body.cartItems,
-                            quantity: sameItem.quantity + req.body.cartItems.quantity
+                            quantity: item.quantity + req.body.cartItems.quantity
                         }
                     }
-                })
-                .then((_cart) => {
-                    res.json(_cart)
-                })
-                .catch(err => console.log(err))
-            }
-            else{
-                //if cart already exists but different item
-                Cart.findOneAndUpdate({user: req.user._id},{
+                }; 
+            }else{
+                condition = { user: req.user._id };
+                update = {
                     "$push": {
                         "cartItems": req.body.cartItems
                     }
-                })
-                .then((_cart) => {
-                    res.json(_cart)
-                })
-                .catch(err => console.log(err))
-            }    
-        }
-        else{
-            //if No cart exists with the user
-            const _item = new Cart({
+                };
+            }
+            Cart.findOneAndUpdate(condition, update)
+            .then((_cart) => {
+                if(_cart){
+                    return res.status(201).json({ cart: _cart });
+                }
+            })
+            .catch((err)=>{
+                console.log(err);
+            });
+        }else{
+            //if cart not exist then create a new cart
+            const cart = new Cart({
                 user: req.user._id,
                 cartItems: [req.body.cartItems]
-            })
-        
-            _item.save()
+            });
+            cart.save()
             .then((cart) => {
-                res.json(cart);
+                if(cart){
+                    return res.status(201).json({ cart });
+                }
             })
-            .catch((err) => {
-                console.log('Cart not added');
+            .catch((err)=>{
                 console.log(err);
-            })
-
-        }
+            });
+        } 
     })
-    .catch((err) => {
+    .catch((err)=>{
         console.log(err);
-    })
-}
+    });
+};
