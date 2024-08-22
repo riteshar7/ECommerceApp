@@ -19,11 +19,14 @@ exports.createPage = (req, res) => {
 
     const page = new Page(req.body);
 
-    page.save((error, page) => {
-        if(error) return res.status(400).json({ error });
+    page.save()
+    .then((page) => {
         if(page){
             return res.status(201).json({ page });
         }
+    })
+    .catch((err)=>{
+        console.log(err);
     })
 
     res.status(200).json({ body: req.body });

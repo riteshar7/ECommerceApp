@@ -15,16 +15,16 @@ const storage = multer.diskStorage({
 exports.upload = multer({ storage });
 
 exports.requireSignin = (req, res, next) => {
-
-    if(req.headers.authorization){
-        const token = req.headers.authorization.split(" ")[1];
-        const user = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = user;
-    }else{
-        return res.status(400).json({ message: 'Authorization required' });
-    }
+    if(!req.headers.authorization) return res.json({message: "Authorization needed"});
+    const token = req.headers.authorization.split(" ")[1];
+    console.log(token);
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+        if(err){
+            return res.json({message: err});
+        }
+        req.user = decoded;
+    });
     next();
-    //jwt.decode()
 }
 
 exports.userMiddleware = (req, res, next) => {

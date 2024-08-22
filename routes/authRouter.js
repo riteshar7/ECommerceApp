@@ -4,7 +4,7 @@ const { validateSignupRequest, isRequestValidated, validateSigninRequest } = req
 const router = express.Router();
 
 
-router.post('/signup',validateSignupRequest, isRequestValidated, signup);
+router.post('/signup', signup);
 router.post('/signin',validateSigninRequest, isRequestValidated, signin);
 
 
