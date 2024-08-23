@@ -10,39 +10,45 @@ exports.signup = (req, res) => {
             message: 'Admin already registered'
         });
 
-        const {
-            firstName,
-            lastName,
-            email,
-            password
-        } = req.body;
-        const hash_password = await bcrypt.hash(password, 10);
-        const _user = new User({ 
-            firstName, 
-            lastName, 
-            email, 
-            hash_password,
-            username: shortid.generate(),
-            role: 'admin'
-        });
-
-        _user.save()
-        .then((user) => {
-            if(user){
-                console.log(user);
-                jwt.sign({_id: user._id, role: user.role}, process.env.JWT_SECRET, { expiresIn: '1d'}, (err, token)=>{
-                    const { _id, firstName, lastName, email, role, fullName } = user;
-                    res.cookie('token', token, { expiresIn: '1d' });
-                    res.json({
-                        token,
-                        user: {_id, firstName, lastName, email, role, fullName}
-                    });
-                });
+        User.estimatedDocumentCount()
+        .then(async (count) =>{
+            let role = "admin";
+            if (count === 0) {
+                role = "super-admin";
             }
+
+            const {
+                firstName,
+                lastName,
+                email,
+                password
+            } = req.body;
+            const hash_password = await bcrypt.hash(password, 10);
+            const _user = new User({ 
+                firstName, 
+                lastName, 
+                email, 
+                hash_password,
+                username: shortid.generate(),
+                role: 'admin'
+            });
+
+            _user.save()
+            .then((user) => {
+                if(user){
+                    console.log(user);
+                    res.json({
+                        message: "Admin created Successfully..!",
+                    });
+                }
+            })
+            .catch((err)=>{
+                console.log(err);
+            });
         })
         .catch((err)=>{
             console.log(err);
-        });
+        })
     })
     .catch((err)=>{
         console.log(err);
@@ -51,10 +57,10 @@ exports.signup = (req, res) => {
 
 exports.signin = (req, res) => {
     User.findOne({ email: req.body.email })
-    .then((user) => {
+    .then(async (user) => {
         if(user){
-
-            if(user.authenticate(req.body.password) && user.role === 'admin'){
+            const isPassword = await user.authenticate(req.body.password);
+            if(isPassword && (user.role === "admin" || user.role === "super-admin")){
                 jwt.sign({_id: user._id, role: user.role}, process.env.JWT_SECRET, { expiresIn: '1d'}, (err, token)=>{
                     const { _id, firstName, lastName, email, role, fullName } = user;
                     res.cookie('token', token, { expiresIn: '1d' });
@@ -84,4 +90,4 @@ exports.signout = (req, res) => {
     res.status(200).json({
         message: 'Signout successfully...!'
     })
-}
+};

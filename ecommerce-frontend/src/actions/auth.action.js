@@ -8,7 +8,7 @@ export const signup = (user) => {
     try {
       dispatch({ type: authConstants.SIGNUP_REQUEST });
       res = await axios.post(`/signup`, user);
-      if (res.status === 201) {
+      if (res.status === 200) {
         dispatch({ type: authConstants.SIGNUP_SUCCESS });
         const { token, user } = res.data;
         localStorage.setItem("token", token);

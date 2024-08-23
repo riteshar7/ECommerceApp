@@ -11,8 +11,8 @@ function runUpdate(condition, updateData) {
 }
 
 exports.addItemToCart = (req, res) => {
-  Cart.findOne({ user: req.user._id }).exec((error, cart) => {
-    if (error) return res.status(400).json({ error });
+  Cart.findOne({ user: req.user._id })
+  .then((cart) => {
     if (cart) {
       //if cart already exists then update cart by quantity
       let promiseArray = [];
@@ -55,44 +55,24 @@ exports.addItemToCart = (req, res) => {
         user: req.user._id,
         cartItems: req.body.cartItems,
       });
-      cart.save((error, cart) => {
-        if (error) return res.status(400).json({ error });
+      cart.save()
+      .then((cart) => {
         if (cart) {
-          return res.status(201).json({ cart });
+          return res.json({ cart });
         }
-      });
+      })
+      .catch(err => console.log(err));
     }
-  });
+  })
+  .catch(err=> console.log(err));
 };
-
-// exports.addToCart = (req, res) => {
-//     const { cartItems } = req.body;
-//     if(cartItems){
-//        if(Object.keys(cartItems).length > 0){
-//            Cart.findOneAndUpdate({
-//                "user": req.user._id
-//            }, {
-//                "cartItems": cartItems
-//            }, {
-//                 upsert: true, new: true, setDefaultsOnInsert: true
-//            }, (error, cartItems) => {
-//                if(error) return res.status(400).json({ error });
-//                if(cartItems) res.status(201).json({ message: 'Added Successfully' });
-//            })
-//        }
-//        //res.status(201).json({ cartItems });
-//     }else{
-//         //res.status(201).json({ req });
-//     }
-// }
 
 exports.getCartItems = (req, res) => {
   //const { user } = req.body.payload;
   //if(user){
   Cart.findOne({ user: req.user._id })
     .populate("cartItems.product", "_id name price productPictures")
-    .exec((error, cart) => {
-      if (error) return res.status(400).json({ error });
+    .then((cart) => {
       if (cart) {
         let cartItems = {};
         cart.cartItems.forEach((item, index) => {
@@ -104,10 +84,9 @@ exports.getCartItems = (req, res) => {
             qty: item.quantity,
           };
         });
-        res.status(200).json({ cartItems });
+        res.json({ cartItems });
       }
     });
-  //}
 };
 
 // new update remove cart items
@@ -123,11 +102,12 @@ exports.removeCartItems = (req, res) => {
           },
         },
       }
-    ).exec((error, result) => {
-      if (error) return res.status(400).json({ error });
+    )
+    .then((result) => {
       if (result) {
         res.status(202).json({ result });
       }
-    });
+    })
+    .catch(err=> console.log(err));
   }
 };
