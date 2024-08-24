@@ -12,7 +12,7 @@ import "./style.css";
  **/
 
 const Orders = (props) => {
-  const order = useSelector((state) => state.order);
+  const orders = useSelector((state) => state.order);
   const [type, setType] = useState("");
   const dispatch = useDispatch();
 
@@ -21,6 +21,7 @@ const Orders = (props) => {
       orderId,
       type,
     };
+    console.log(payload);
     dispatch(updateOrder(payload));
   };
 
@@ -34,7 +35,8 @@ const Orders = (props) => {
 
   return (
     <Layout sidebar>
-      {order.orders.map((orderItem, index) => (
+      {console.log(orders)}
+      {orders.orders.map((orderItem, index) => (
         <Card
           style={{
             margin: "10px 0",

@@ -22,11 +22,5 @@ exports.updateOrder = (req, res) => {
 exports.getCustomerOrders = async (req, res) => {
   const orders = await Order.find({})
     .populate("items.productId", "name")
-    .then((data)=>{
-        console.log(data);
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
   res.status(200).json({ orders });
 };

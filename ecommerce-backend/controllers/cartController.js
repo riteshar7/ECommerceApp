@@ -86,14 +86,15 @@ exports.getCartItems = (req, res) => {
         });
         res.json({ cartItems });
       }
-    });
+    })
+    .catch(err=>console.log(err));
 };
 
 // new update remove cart items
 exports.removeCartItems = (req, res) => {
   const { productId } = req.body.payload;
   if (productId) {
-    Cart.update(
+    Cart.updateOne(
       { user: req.user._id },
       {
         $pull: {
@@ -105,7 +106,7 @@ exports.removeCartItems = (req, res) => {
     )
     .then((result) => {
       if (result) {
-        res.status(202).json({ result });
+        res.json({ result });
       }
     })
     .catch(err=> console.log(err));
