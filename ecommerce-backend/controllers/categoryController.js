@@ -29,7 +29,6 @@ exports.addCategory = (req, res) => {
   const categoryObj = {
     name: req.body.name,
     slug: `${slugify(req.body.name)}-${shortid.generate()}`,
-    createdBy: req.user._id,
   };
 
   if (req.file) {
@@ -41,10 +40,10 @@ exports.addCategory = (req, res) => {
   }
 
   const cat = new Category(categoryObj);
-  cat.save((error, category) => {
-    if (error) return res.status(400).json({ error });
+  cat.save()
+  .then((category) => {
     if (category) {
-      return res.status(201).json({ category });
+      return res.json({ category });
     }
   });
 };
@@ -54,7 +53,7 @@ exports.getCategories = (req, res) => {
   .then((categories) => {
     if (categories) {
       const categoryList = createCategories(categories);
-      res.status(200).json({ categoryList });
+      res.json({ categoryList });
     }
   })
   .catch(err => console.log(err));
@@ -102,7 +101,6 @@ exports.deleteCategories = async (req, res) => {
   for (let i = 0; i < ids.length; i++) {
     const deleteCategory = await Category.findOneAndDelete({
       _id: ids[i]._id,
-      createdBy: req.user._id,
     });
     deletedCategories.push(deleteCategory);
   }

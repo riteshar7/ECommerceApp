@@ -49,7 +49,7 @@ exports.getOrders = (req, res) => {
     .populate("items.productId", "_id name productPictures")
     .then((orders) => {
       if (orders) {
-        res.status(200).json({ orders });
+        res.json({ orders });
       }
     })
     .catch((err) => {
@@ -63,11 +63,9 @@ exports.getOrder = (req, res) => {
     .lean()
     .then((order) => {
       if (order) {
-        Address.findOne({
-          user: req.user._id,
-        })
-        .then((address) => {
-          order.address = address.address.find(
+        Address.findOne({user: req.user._id})
+        .then(async (address) => {
+          order.address = await address.address.find(
             (adr) => adr._id.toString() == order.addressId.toString()
           );
           res.json({

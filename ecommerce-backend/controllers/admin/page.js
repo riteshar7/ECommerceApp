@@ -23,7 +23,7 @@ exports.createPage = (req, res) => {
             Page.findOneAndUpdate({ category: req.body.category }, req.body)
             .then((updatedPage) => {
                 if (updatedPage) {
-                    return res.status(201).json({ page: updatedPage });
+                    return res.json({ page: updatedPage });
                 }
             })
             .catch((err) =>{

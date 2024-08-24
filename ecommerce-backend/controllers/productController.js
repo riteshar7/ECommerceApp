@@ -11,7 +11,7 @@ exports.createProduct = (req, res) => {
 
   if (req.files.length > 0) {
     productPictures = req.files.map((file) => {
-      return { img: file.location };
+      return { img: file.filename };
     });
   }
 
@@ -115,7 +115,7 @@ exports.deleteProductById = (req, res) => {
 };
 
 exports.getProducts = async (req, res) => {
-  const products = await Product.find({ createdBy: req.user._id })
+  const products = await Product.find({})
     .select("_id name price quantity slug description productPictures category")
     .populate({ path: "category", select: "_id name" })
     .then((data) =>{

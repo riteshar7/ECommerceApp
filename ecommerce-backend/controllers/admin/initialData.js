@@ -26,25 +26,16 @@ function createCategories(categories, parentId = null) {
 }
 
 exports.initialData = async (req, res) => {
-  const categories = await Category.find({}).exec();
+  const categories = await Category.find({});
+
   const products = await Product.find({ createdBy: req.user._id })
     .select("_id name price quantity slug description productPictures category")
     .populate({ path: "category", select: "_id name" })
-    .then((data)=>{
-        console.log(data);
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
+    
   const orders = await Order.find({})
     .populate("items.productId", "name")
-    .then((data)=>{
-        console.log(data);
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
-  res.status(200).json({
+    
+  res.json({
     categories: createCategories(categories),
     products,
     orders,
