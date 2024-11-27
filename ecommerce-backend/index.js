@@ -25,6 +25,9 @@ env.config();
 mongoose.connect(`mongodb+srv://${process.env.MONGO_DB_USER}:${process.env.MONGO_DB_PWD}@cluster0.emgnm5g.mongodb.net/${process.env.MONGO_DB_DATABASE}?retryWrites=true&w=majority`)
 .then(() => {
     console.log("Database is connected");
+    app.listen(process.env.PORT, () => {
+        console.log(`Server is running on port ${process.env.PORT}`);
+    });
 })
 .catch((err)=>{
     console.log("Database connection error");
@@ -44,7 +47,3 @@ app.use('/api', pageRoutes);
 app.use('/api', addressRoutes);
 app.use('/api', orderRoutes);
 app.use('/api', adminOrderRoute);
-
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT}`);
-});
